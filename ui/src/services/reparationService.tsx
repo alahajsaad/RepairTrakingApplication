@@ -116,10 +116,13 @@ const getReparationById = async (id: number): Promise<Reparation> => {
 };
 
 const updateReparation = async (tasks: string, id: number): Promise<Reparation> => {
+  console.log(tasks)
   try {
-    const { data }: AxiosResponse<Reparation> = await axios.put(`${BASE_URL}/reparation/tasks/${id}`, {
-      params: { tasks },
-    });
+    const { data }: AxiosResponse<Reparation> = await axios.put(
+      `${BASE_URL}/reparation/tasks/${id}`,
+      null, // No request body is sent
+      { params: { tasks } } // Send tasks as query parameters
+    );
     return data;
   } catch (error) {
     if (axios.isAxiosError(error)) {

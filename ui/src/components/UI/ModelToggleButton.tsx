@@ -10,12 +10,13 @@ type ModelTypes = {
     title? : string ,
     icon? : IconType ,
     ModalTitle :string,
+    testId?: string;
 } 
-const ModelToggleButton = ({content , ModalTitle ,title , icon = IoMdAdd} : ModelTypes) => {
+const ModelToggleButton = ({content , ModalTitle ,title , icon = IoMdAdd,testId} : ModelTypes) => {
   const [isModalOpen, toggleModal] = useToggle(false);
   return (
     <div>
-        <Button title={title} icon={icon} onClick={toggleModal}/>
+        <Button testId={testId}  title={title} icon={icon} onClick={toggleModal}/>
         <Modal ModalTitle={ModalTitle} isEditing={isModalOpen} setIsEditing={toggleModal}>
          {content(toggleModal)}
          </Modal>

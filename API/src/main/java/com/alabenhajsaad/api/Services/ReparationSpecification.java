@@ -29,6 +29,7 @@ public class ReparationSpecification {
         };
     }
 
+
     /*public static Specification<Reparation> hasStatus(RepairStatus status) {
         return (root, query, criteriaBuilder) -> {
             if (status == null) {

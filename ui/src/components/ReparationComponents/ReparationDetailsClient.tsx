@@ -9,10 +9,12 @@ type ReparationDetailsClientProps ={
 }
 
 const ReparationDetailsClient = ({client} : ReparationDetailsClientProps) => {
+
   return (
     <div className='card w-[25vw]'>
           <div className='flex items-baseline justify-between pb-1'>
               <h3 className='text-lg font-semibold'>Client Details</h3>
+              
               <ModelToggleButton ModalTitle='mettre à jour votre client' icon={FaRegEdit} content={(toggleModal) => (
                        <ClientForm client={client} toggle={toggleModal} />
               )} />

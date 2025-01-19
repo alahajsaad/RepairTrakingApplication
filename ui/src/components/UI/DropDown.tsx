@@ -47,7 +47,7 @@ const DropDown = ({ setChosed, Data } : DropDownType) => {
               className="p-1 rounded cursor-pointer hover:bg-gray-300 transition-colors duration-200"
               onClick={() => handleSelect(m)}
             >
-              {m.designation}
+              {m.designation + " - " + m.reference}
             </li>
           ))}
         </ul>

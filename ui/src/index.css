@@ -4,7 +4,7 @@
 
 
  .card {
-    @apply p-4 m-4 rounded shadow-custom;
+    @apply p-4 m-4 rounded shadow-custom min-w-[400px];
   }
  .error{
     @apply text-red-600 text-sm mt-1

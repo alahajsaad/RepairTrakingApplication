@@ -12,7 +12,9 @@ import com.alabenhajsaad.api.Services.IServices.IServiceReparation;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,7 +55,12 @@ public class ReparationService implements IServiceReparation {
     {
         Specification<Reparation> spec = Specification
                 .where(reparationSpecification.hasClientPhoneNumber(clientPhoneNumber))
-                .and(reparationSpecification.hasMachineReference(machineRef));
+                .and(reparationSpecification.hasMachineReference(machineRef)) ;
+
+        if (pageable.getSort().isUnsorted()) {
+            pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC, "id"));
+        }
+
         return repository.findAll(spec, pageable);
     }
     @Override

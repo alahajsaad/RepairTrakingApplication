@@ -37,7 +37,7 @@ public class ReparationController {
             @RequestParam(required = false) String ClientPhoneNumber ,
 
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "8") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
         return serviceReparation.getFiltredReparations( MachineRef, ClientPhoneNumber, pageable);
@@ -49,11 +49,11 @@ public class ReparationController {
     }
 
     @PutMapping("/tasks/{id}")
-    public ResponseEntity<Reparation> logCompletedTasks(@PathVariable int id , @RequestBody UpdateReparationDto dto) {
-        if (dto.tasks() == null || dto.tasks().isBlank()) {
+    public ResponseEntity<Reparation> logCompletedTasks(@PathVariable int id , @RequestParam String tasks) {
+        if (tasks == null || tasks.isBlank()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
-        Reparation updatedReparation = serviceReparation.logCompletedTasks(id, dto.tasks());
+        Reparation updatedReparation = serviceReparation.logCompletedTasks(id, tasks);
         return ResponseEntity.ok(updatedReparation);
     }
 }

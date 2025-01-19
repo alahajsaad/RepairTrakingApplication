@@ -20,7 +20,7 @@ public class ServicePhoneNbs implements IServicePhoneNbs {
         if (phoneNbs != null && phoneNbs.getClient() != null) {
             return phoneNbs.getClient();
         } else {
-            return null ;
+            throw new RuntimeException("No Client found for number " + number);
         }
     }
 

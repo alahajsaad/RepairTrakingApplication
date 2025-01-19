@@ -1,38 +1,31 @@
 package com.alabenhajsaad.api.Services;
 
 import com.alabenhajsaad.api.Entities.Client;
-import com.alabenhajsaad.api.Entities.PhoneNbs;
 import com.alabenhajsaad.api.Repositories.ClientRepository;
+import com.alabenhajsaad.api.Repositories.PhoneNbsRepository;
 import com.alabenhajsaad.api.Services.IServices.IServiceClient;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 public class ServiceClient implements IServiceClient {
     private final ClientRepository repository ;
-    private final ServicePhoneNbs servicePhoneNbs ;
+    private final PhoneNbsRepository phoneNbsRepository;
     @Override
     @Transactional
     public Client addClient(Client client) {
-//        if (client.getPhoneNbsList() != null) {
-//            for (PhoneNbs phoneNbs : client.getPhoneNbsList()) {
-//                // Check if the phone number is already associated with a client
-//                Client existingClient = servicePhoneNbs.getClientByPhoneN(phoneNbs.getNumber());
-//                if (existingClient != null) {
-//                    throw new IllegalArgumentException("A client already exists with phone number: " + phoneNbs.getNumber());
-//                }
-//                // Set the relationship
-//                phoneNbs.setClient(client);
-//            }
-//        }
-        // Save the client
         if (client.getPhoneNbsList() != null) {
-            client.getPhoneNbsList().forEach(phoneNbs -> phoneNbs.setClient(client));
+            client.getPhoneNbsList().forEach(phoneNbs -> {
+                        if(!phoneNbsRepository.existsPhoneNbsByNumber(phoneNbs.getNumber())){
+                            phoneNbs.setClient(client) ;
+                        }
+                        else {
+                            throw new RuntimeException("A client already exists with phone number: " + phoneNbs.getNumber());
+                        }
+            });
         }
         return repository.save(client);
     }
@@ -49,7 +42,7 @@ public class ServiceClient implements IServiceClient {
 
     @Override
     public List<Client> GetAllClients() {
-        return List.of();
+        return repository.findAll();
     }
 
     @Override

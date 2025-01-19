@@ -17,18 +17,6 @@ public class CallNumberGeneratorService implements IServiceCallNumberGenerator {
 
     private final ReparationRepository repository;
 
-//    public String getLastCallNumber() {
-//        String lastCallNumber = repository.findLastCallNumber();
-//        String currentYear = getCurrentYear();
-//
-//        // If no previous call number exists or it's from a different year, start with the initial call number
-//        if (lastCallNumber == null || !isSameYear(lastCallNumber, currentYear)) {
-//            return currentYear + INITIAL_CALL_NUMBER;
-//        }
-//        return lastCallNumber;
-//    }
-
-
     @Override
     public String generateNewCallNumber() {
         String lastCallNumber = repository.findLastCallNumber();
@@ -59,10 +47,4 @@ public class CallNumberGeneratorService implements IServiceCallNumberGenerator {
         return lastCallNumber.startsWith(currentYear);
     }
 
-
-//    @Override
-//    public String getGeneratedCallNumber() {
-//        // First, retrieve the last valid call number, then generate the next one
-//        return generateNewCallNumber(getLastCallNumber());
-//    }
 }

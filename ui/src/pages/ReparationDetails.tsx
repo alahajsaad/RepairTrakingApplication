@@ -1,32 +1,43 @@
-import { useEffect, useState } from 'react';
+import { pdf } from '@react-pdf/renderer';
+import { useEffect } from 'react';
+import { FaRegEdit } from "react-icons/fa";
 import { useParams } from 'react-router-dom';
-import { Reparation } from '../types/Reparation';
-import reparationService from '../services/reparationService';
+import UpdateReparationForm from '../components/Forms/UpdateReparationForm';
+import RepairReport from '../components/PDFReports/RepairReport';
 import ReparationDetailsClient from '../components/ReparationComponents/ReparationDetailsClient';
 import ReparationDetailsMachine from '../components/ReparationComponents/ReparationDetailsMachine';
 import Button from '../components/UI/Button';
-import { FaRegEdit } from "react-icons/fa";
 import ModelToggleButton from '../components/UI/ModelToggleButton';
-import UpdateReparationForm from '../components/Forms/UpdateReparationForm';
-
+import { useReparation } from '../context/ReparationContext'; // Import the custom hook
 const ReparationDetails = () => {
-  const [reparation, setReparation] = useState<Reparation | null>(null);
+  //const [reparation, setReparation] = useState<Reparation | null>(null);
   const { id } = useParams<{ id: string }>();
-
+  const { reparation, fetchReparation } = useReparation();
   useEffect(() => {
-    const fetchReparation = async () => {
-      if (!id) return; // Vérifie que l'id est défini
-      try {
-        const reparationId = parseInt(id, 10); // Conversion en nombre si nécessaire
-        const response = await reparationService.getReparationById(reparationId);
-        setReparation(response);
-      } catch (error) {
-        console.error('Failed to fetch reparation:', error);
-      }
-    };
+     fetchReparation(id!);
+  }, [id,fetchReparation]);
 
-    fetchReparation();
-  }, [id]);
+  const handleGeneratePdf = async () => {
+   
+      if (reparation) {
+
+         // Generate PDF blob
+        const blob = await pdf(<RepairReport reparation={reparation} />).toBlob();
+
+        // Create a new window with the PDF content
+        const pdfWindow = window.open('', '_blank');
+        if (pdfWindow) {
+          const url = URL.createObjectURL(blob);
+          pdfWindow.location.href = url;
+        }
+
+      } else {
+        console.error('Reparation data is missing.');
+      }
+   
+  };
+  
+  
 
   if (!reparation) {
     return <div>No reparation data found.</div>;
@@ -41,32 +52,37 @@ const ReparationDetails = () => {
         {reparation.machine && <ReparationDetailsMachine machine={reparation.machine} />}
       </div>
       <div className="card w-full">
-  {!reparation.descriptionTravail ? (
-    <div className="flex flex-col items-center justify-center text-center mt-12">
-      <p>Ajoutez vos travaux effectués !</p>
-      <ModelToggleButton ModalTitle='Ajouter les travaux effectués' icon={FaRegEdit} content={(toggleModal) => (
-                      <UpdateReparationForm reparation={reparation} toggle={toggleModal}/>
-      )} />
-    </div>
-  ) : (
-    <div>
-      <div className="flex items-center justify-between m-1">
-        <p>Travaux effectués :</p>
-        <ModelToggleButton ModalTitle="Ajouter ou modifier les travaux effectués" icon={FaRegEdit} content={(toggleModal) => (
-              <UpdateReparationForm reparation={reparation} toggle={toggleModal}/>
-        )} />
-      </div>
+      {!reparation.descriptionTravail ? (
+        <div className="flex flex-col items-center justify-center text-center mt-12">
+          <p>Ajoutez vos travaux effectués !</p>
+          <ModelToggleButton ModalTitle='Ajouter les travaux effectués' icon={FaRegEdit} content={(toggleModal) => (
+                          <UpdateReparationForm reparation={reparation} toggle={toggleModal}/>
+          )} />
+        </div>
+      ) : (
+      <div className='flex flex-col justify-between h-full'>
+        <div>
+          <div className="flex items-center justify-between m-1">
+            <p>Travaux effectués :</p>
+            <ModelToggleButton ModalTitle="Ajouter ou modifier les travaux effectués" icon={FaRegEdit} content={(toggleModal) => (
+                  <UpdateReparationForm reparation={reparation} toggle={toggleModal}/>
+            )} />
+          </div>
+          <div className="border-2 border-gray-200 rounded p-2 bg-gray-100 text-black w-[70%] min-h-[100px]">
+            <p>
+              {reparation.descriptionTravail}
+            </p>
+          </div>
+        </div>
 
-      <p className="border-2 border-gray-500 rounded p-2">
-        {reparation.descriptionTravail}
-      </p>
+      
 
-      <div className="flex justify-end mt-5">
-        <Button title="Imprimer le rapport" />
+        <div className="flex justify-end mt-5">
+          <Button onClick={handleGeneratePdf} title="Imprimer le rapport" />
+        </div>
       </div>
-    </div>
-  )}
-</div>
+    )}
+  </div>
 
     </div>
   );

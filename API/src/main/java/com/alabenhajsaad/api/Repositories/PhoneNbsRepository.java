@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PhoneNbsRepository extends JpaRepository<PhoneNbs, Integer> {
     PhoneNbs findPhoneNbsByNumber(String number) ;
+    boolean existsPhoneNbsByNumber(String number);
 }

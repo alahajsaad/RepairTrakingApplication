@@ -5,38 +5,66 @@ import { Input } from '../UI/Input';
 import Button from '../UI/Button';
 import { Client } from '../../types/Client';
 import clientService from '../../services/clientService';
+import { toast } from 'react-toastify';
+import { useReparation } from '../../context/ReparationContext';
+import { useEffect } from 'react';
+
 
 
 
 const formSchema = z.object({
   name: z.string().min(1, 'Le nom est obligatoire'),
-  email: z.string().email('Adresse email invalide'),
-  phoneNbsList: z.array(z.string()
-  .regex(/^\d+$/, 'Le numéro de client doit contenir uniquement des chiffres')
-  .length(8, 'Le numéro de client doit comporter exactement 8 chiffres')
-  .min(1, 'Au moins un numéro de téléphone est requis')  // Enforce at least one phone number
-)});
+  email: z.string()
+    .email('Adresse email invalide')
+    .optional()
+    .or(z.literal('')),
+  phoneNbsList: z.tuple([
+    z.string()
+      .regex(/^\d+$/, 'Le numéro de client doit contenir uniquement des chiffres')
+      .length(8, 'Le numéro de client doit comporter exactement 8 chiffres'),
+    z.string()
+      .regex(/^\d+$/, 'Le numéro de client doit contenir uniquement des chiffres')
+      .length(8, 'Le numéro de client doit comporter exactement 8 chiffres')
+      .optional()
+      .or(z.literal(''))
+  ])
+});
 
 
 type FormValues = z.infer<typeof formSchema>;
 type ClientFormProps = {
   client: Client;
-  setClient : (data : Client) => void ;
+  setReparationClient : (data : Client) => void ;
   toggle: (isEditing: boolean) => void;
 };
-const ClientForm = ({client , setClient ,toggle} : Partial<ClientFormProps> ) => {
-  const {register,handleSubmit,reset, formState: { errors },} = useForm<FormValues>({
-    defaultValues: client
+const ClientForm = ({client , setReparationClient ,toggle } : Partial<ClientFormProps> ) => {
+  const { updateReparationClient } = useReparation();
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
+  defaultValues: client
     ? {
-        email : client.email,
+        email: client.email,
         name: client.name,
-        phoneNbsList : client.phoneNbsList.map(phone => phone.number),
-       
+        phoneNbsList: [
+          client.phoneNbsList[0]?.number, // Ensure the first phone number is always a string
+          client.phoneNbsList[1]?.number ?? undefined, // Ensure the second phone number is either a string or undefined
+        ],
       }
     : undefined,
-    resolver: zodResolver(formSchema), // Using zodResolver for validation
-  });
+  resolver: zodResolver(formSchema), // Using zodResolver for validation
+});
 
+useEffect(() => {
+  if (client) {
+    reset({
+      email: client.email || '',
+      name: client.name || '',
+      phoneNbsList: [
+        client.phoneNbsList[0]?.number || '',
+        client.phoneNbsList[1]?.number || '',
+      ],
+    });
+  }
+}, [client, reset]);
   const handleFormSubmit = (data: FormValues) => {
     console.log(data)
     if(client) {
@@ -53,43 +81,28 @@ const ClientForm = ({client , setClient ,toggle} : Partial<ClientFormProps> ) =>
   const addUser = async (client: FormValues) => {
     console.log(client)
     const clientData: Partial<Client> = {
-      name: client.name,
-      email: client.email,
-      phoneNbsList: client.phoneNbsList.map(phone => ({
-        number: phone,
-      })),
-    };
-    
+    name: client.name,
+    email: client.email,
+    phoneNbsList: client.phoneNbsList
+    .filter((num): num is string => num !== undefined && num.trim() !== '')
+    .map(num => ({
+      number: num, // Transform each number into an object with the `number` property
+    })),};
     try {
       const response = await clientService.addClient(clientData);
-      setClient?.(response);
+      setReparationClient?.(response);
+      toast.success('Le client ajouter avec suscess', {
+        position: 'top-right', 
+      });
     } catch (error) {
       console.log(error)
+      toast.error('Le client avec ce numéro existe déjà.', {
+        position: 'top-right', 
+      });
     }
   };
 
-/**
- * Updates an existing client with new details, including name, email, and phone numbers.
- *
- * @param {FormValues} updatedclient - The updated client data from the form, including the name, email, and an array of phone numbers.
- * @param {Client} client - The original client object, containing the existing client information such as ID and phone numbers.
- * 
- * @description
- * This function prepares a `Client` object by merging the updated data from the form (`updatedclient`) 
- * with the existing client information (`client`). It maps the updated phone numbers to match the 
- * structure required for the `phoneNbsList` property, retaining the original IDs of phone numbers if they exist.
- *
- * - For each phone number in `updatedclient.phoneNumbers`, the function:
- *   1. Assigns the existing ID from `client.phoneNbsList[index]?.id` if available.
- *   2. Uses the updated phone number directly for the `number` property.
- *
- * Once the `Client` object (`clientData`) is constructed, it sends it to the `clientService.updateClient` function 
- * to update the client on the backend.
- *
- * @returns {Promise<any>} - The response from the client update service, or `undefined` if an error occurs.
- * 
- * @throws Logs any errors that occur during the update process to the console.
- */
+
   const updateClient = async (updatedclient: FormValues, client: Client) => {
     const clientData: Client = {
       id: client.id,
@@ -97,12 +110,12 @@ const ClientForm = ({client , setClient ,toggle} : Partial<ClientFormProps> ) =>
       email: updatedclient.email!,
       phoneNbsList: updatedclient.phoneNbsList.map((phoneNumber, index) => ({
         id: client.phoneNbsList[index]?.id , 
-        number: phoneNumber, 
+        number: phoneNumber || '', 
       })),
     }
     try {
       const response = await clientService.updateClient(clientData);
-      return response;
+      updateReparationClient(response)
     } catch (error) {
       console.log(error);
     }
@@ -116,7 +129,7 @@ const ClientForm = ({client , setClient ,toggle} : Partial<ClientFormProps> ) =>
     <form className='card' onSubmit={handleSubmit(handleFormSubmit)} >
       <div className='flex flex-col gap-2 w-fit'>
           <div>
-            <Input placeholder='Name' {...register('name')} />
+            <Input placeholder='Nom **' {...register('name')} />
             {errors.name && <p className='error'>{errors.name.message}</p>}
           </div>
           <div>
@@ -124,7 +137,7 @@ const ClientForm = ({client , setClient ,toggle} : Partial<ClientFormProps> ) =>
             {errors.email && <p className='error'>{errors.email.message}</p>}
           </div>
           <div>
-            <Input placeholder='TEL 1' {...register('phoneNbsList.0')} />
+            <Input placeholder='TEL 1 **' {...register('phoneNbsList.0')} />
             {errors.phoneNbsList?.[0] && <p className='error'>{errors.phoneNbsList[0].message}</p>}
           </div>
           <div>
@@ -133,7 +146,7 @@ const ClientForm = ({client , setClient ,toggle} : Partial<ClientFormProps> ) =>
           </div>
       </div>
       <div className='flex justify-end mt-[20px]'>
-          <Button type='submit' title={client ? 'Modifier' : 'Ajouter'} />
+          <Button testId="AddClientButton" type='submit' title={client ? 'Modifier' : 'Ajouter'} />
       </div>
    </form>
     

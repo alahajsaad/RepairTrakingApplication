@@ -1,13 +1,14 @@
 import './App.css';
-import { Route, Routes, Navigate } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import Sidebar from './components/Sidebar/Sidebar';
 import ShowReparation from './pages/ShowReparation';
 import AddReparation from './pages/AddReparation/AddReparation';
 import ReparationDetails from './pages/ReparationDetails';
-
+import { ToastContainer } from 'react-toastify';
 function App() {
   return (
     <div className="App">
+      <ToastContainer />
       {/* Main layout with sidebar and content */}
       <div className="main">
         <Sidebar />

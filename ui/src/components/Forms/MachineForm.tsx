@@ -7,6 +7,9 @@ import { Machine } from '../../types/Machine';
 import { Client } from '../../types/Client';
 import machineService from '../../services/machineService';
 import { MachineDto } from '../../types/MachineDto';
+import { toast } from 'react-toastify';
+import { useReparation } from '../../context/ReparationContext';
+import { useEffect } from 'react';
 
 
 
@@ -21,9 +24,12 @@ type MachineFormProps = {
   machine?: Machine; 
   client? : Client ;
   toggle: (isEditing: boolean) => void;
+  setReparationMachineId? : (machineId : number) => void ;
+  fetchMachines? : (phoneNumber: string) => Promise<void>;
 };
 
-const MachineForm = ({machine , client ,toggle} : MachineFormProps) => {
+const MachineForm = ({machine , client ,toggle , setReparationMachineId ,fetchMachines} : MachineFormProps) => {
+  const { updateReparationMachine } = useReparation();
   const { register, handleSubmit , reset , formState: { errors },} = useForm<FormValues>({
     defaultValues : machine ? {
       designation :machine.designation,
@@ -32,8 +38,19 @@ const MachineForm = ({machine , client ,toggle} : MachineFormProps) => {
     resolver: zodResolver(formSchema), 
   });
   
+  useEffect(() => {
+    if (machine) {
+      reset({
+        designation: machine.designation,
+        reference: machine.reference,
+      });
+    } else {
+      reset();
+    }
+  }, [machine, reset]);
   const handleFormSubmit = (data: FormValues) => {
     if (!client) {
+      toast.error('Veuillez rechercher un client ou ajouter un nouveau.', { position: 'top-right' });
       console.error("Client is required.");
       return;
     }
@@ -55,11 +72,21 @@ const MachineForm = ({machine , client ,toggle} : MachineFormProps) => {
       ClientId: client.id, 
     };
     try {
+      // Add the machine using the service
       const response = await machineService.addMachine(machineData);
-     
+      toast.success('Opération réussie!', { position: 'top-right' });
+      // Fetch machines first, ensuring the function exists and a phone number is available
+      if (fetchMachines && client.phoneNbsList?.[0]?.number) {
+        await fetchMachines(client.phoneNbsList[0].number); // Ensures this completes first
+      }
+    
+      // After fetching machines, set the reparation machine ID
+      setReparationMachineId?.(response.id);
+    
       return response;
     } catch (error) {
-      console.log(error)
+      console.error("Error adding machine:", error);
+      throw error;
     }
   }
   const updateMachine = async (updatedMachine: FormValues,machine :Machine , client: Client) => {
@@ -72,6 +99,7 @@ const MachineForm = ({machine , client ,toggle} : MachineFormProps) => {
     }
     try {
       const response = await machineService.updateMachine(machineData);
+      updateReparationMachine(response) ;
       return response;
     } catch (error) {
       console.log(error);
@@ -94,7 +122,7 @@ const MachineForm = ({machine , client ,toggle} : MachineFormProps) => {
         </div>
       </div>
       <div className='flex justify-end mt-[20px]'>
-          <Button type='submit' title='Ajouter' />
+          <Button type='submit' title={machine ? 'Modifier' : 'Ajouter'} />
       </div>
     </form>
     

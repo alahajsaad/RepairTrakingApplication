@@ -6,6 +6,8 @@ import com.alabenhajsaad.api.Services.IServices.IServicePhoneNbs;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/client")
@@ -16,6 +18,10 @@ public class ClientController {
     @PostMapping("/add")
     public Client addClient(@RequestBody Client client){
         return serviceClient.addClient(client) ;
+    }
+    @GetMapping("/all")
+    public List<Client> getAllClients(){
+        return serviceClient.GetAllClients() ;
     }
     @GetMapping("/get")
     public Client getClient(String phoneNumber){
