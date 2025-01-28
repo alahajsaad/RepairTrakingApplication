@@ -1,4 +1,10 @@
 spring:
+  mvc:
+    pathMatch:
+      matching-strategy: ant_path_matcher
+
+
+
   datasource:
     url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/RepairTrackingDB?createDatabaseIfNotExist=true
     username: root
@@ -11,8 +17,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
-
 
 
 

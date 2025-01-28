@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/static/css/main.034d4e8a.css",
-    "main.js": "/static/js/main.033e416c.js",
+    "main.js": "/static/js/main.9fe3fbe9.js",
     "static/media/TNILogo.jpg": "/static/media/TNILogo.8d546aeb52b6b9a5c5da.jpg",
     "index.html": "/index.html",
     "main.034d4e8a.css.map": "/static/css/main.034d4e8a.css.map",
-    "main.033e416c.js.map": "/static/js/main.033e416c.js.map"
+    "main.9fe3fbe9.js.map": "/static/js/main.9fe3fbe9.js.map"
   },
   "entrypoints": [
     "static/css/main.034d4e8a.css",
-    "static/js/main.033e416c.js"
+    "static/js/main.9fe3fbe9.js"
   ]
 }
